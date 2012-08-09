@@ -1,0 +1,156 @@
+<% if not page.exists %>
+    <h3> Page does not exist </h3>
+    Edit to existify it.
+    <hr/>
+<% end %>
+
+<style type="text/css">
+  textarea#editarea{
+    width: 100%;
+    height: 500px;
+    border: solid 1px #ddd;
+    padding: 0;
+    margin: 0;
+  }
+</style>
+
+<script type="text/javascript"> 
+function resizeFrame(e){ 
+    newheight=Math.max(window.innerHeight - 250, 100);
+    e.style.height = newheight + "px"; 
+}
+
+window.onresize=resizeFrame;
+</script> 
+
+
+
+<h3>Edit <%=h page.title%></h3>
+<!--<p>Filepath:<a href="file://<%=h page.path.to_s %>"><%=h page.path.to_s %></a></p>-->
+
+
+<form action="" method="POST">
+    <input type="hidden" name="action" value="post"/>
+    <input type="hidden" name="mode" value="display"/>
+    <input type="hidden" name="page" value="<%=page.relpath%>"/>
+    
+    <input type="submit" value="Submit"/>
+    <input type="reset" value="Reset" />
+    <br/>
+    <div id="editcontent">
+	<textarea id="editarea" class="editarea" onclick="resizeFrame(this);" name="content"><%=h (page.content.exists ? page.content.content(false) : $s[:default_edit_contents] )%></textarea>
+    </div>
+    <% if page.exists %>
+    <br/>
+    <div class="formelement"> 
+	<span class="field"><input type="checkbox" name="newrevision" value="yes" checked id="revisionfield"/></span>
+	<span class="label"><label for="revisionfield">Back up old content as revision <%=(page.revisions.max || 0)+1%>.</label></span>
+    </div>
+    <% end %>
+    <br/>
+    <input type="submit" value="Submit"/>
+    <input type="reset" value="Reset" />
+</form>
+
+
+
+
+
+
+
+<% if page.revisions.length > 0 %>
+<hr/>
+<h3>Restore a Backup Revision</h3>
+<p>Revisions may not be edited, but can be deleted using the "Delete" tab, or loaded into the current page.</p>
+<style type="text/css">
+table#revisionlisting{
+    padding: 0.25em;
+    border: solid 1px #333;
+}
+
+table#revisionlisting td{
+    padding: 0.2em 0.5em;
+}
+
+
+
+table#revisionlisting th{
+    border-bottom: solid 1px #333;
+}
+</style>
+
+<table id="revisionlisting">
+    <thead><th>Revision</th><th>Date</th><th>Size</th><th>Actions</th></thead>
+    <tfoot></tfoot>
+    <tbody>
+	<% page.revisions.sort.each{ |rid| %>
+	    <tr>
+		<td><%= rid.to_s %></td>
+		<td><%= File.mtime((wixi.storage.content_fullpath(page, rid))).strftime("%d/%m/%y, %H:%M:%S") %></td>
+		<td><%= to_human(File.size(wixi.storage.content_fullpath(page, rid))) %></td>
+		<td><a href="<%= File.join(["", $s[:url_dynamic], page.relpath])%>?mode=display&revision=<%=h rid%>">View</a>, 
+		    <a href="<%= File.join(["", $s[:url_dynamic], page.relpath])%>?mode=edit&revision=<%=h rid%>">Edit/Restore</a></td>
+	    </tr>
+	<% } %>
+    </tbody>
+</table>
+
+<% end %>
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+span.label{
+}
+
+span.field{
+}
+
+div.formelement{
+    padding: 0.25em;
+}
+
+div.formelement input#buttonofdoom{
+    margin-top: 0.6em;
+    padding: 0.25em;
+}
+
+p.warning{
+    text-align: center;
+    color: red;
+   font-style: italic;
+}
+
+</style>
+
+
+
+
+
+<hr/>
+<h3>Convert a Page</h3>
+<p>WGETs a page down to the local machine, rewrites its href attributes then converts it to LaTeX.</p>
+<p class="warning">Warning: This can be of dubious quality, and will wipe the above content.</p>
+<form  action="" method="POST">
+<!-- onsubmit="document.getElementById('urlfield').value = escape(document.getElementById('urlfield').value);" -->
+    <input type="hidden" name="action" value="converthtmltolatex" />
+    <input type="hidden" name="mode" value="edit" />
+
+
+    <div class="formelement"> 
+	<span class="label"><label for="urlfield">URL to convert:</label></span> 
+	<span class="label"><input name="url" id="urlfield" type="text" /></span>
+    </div>
+
+
+    <div class="formelement"> 
+	<input type="submit" value="Convert" />
+    </div>
+</form>
+

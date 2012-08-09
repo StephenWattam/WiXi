@@ -1,0 +1,228 @@
+<style cript type="text/css">
+div.containerbox{
+    padding: 1em;
+    margin: 0.5em;
+    padding-top: 0;
+    border: solid 1px black;
+
+
+		border: solid 1px #ddd;
+		margin: 1em;
+		padding: 0.5em;
+
+		-moz-box-shadow: 2px 2px 4px #999;
+		-webkit-box-shadow: 2px 2px 4px #999;
+
+		background: #ededed;
+		background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.01, #fff),color-stop(0.99, #ddd));
+		background: -moz-linear-gradient(top,  #ddd,  #fff);
+
+}
+
+p.note{
+    font-size: small;
+    font-style: italic;
+}
+
+div.configsubgroup{
+    padding-left: 1em;
+}
+
+div.configsubgroup h4{
+    margin-left: -1em;
+    border-bottom: solid 1px #aaa;
+}
+
+div.configsubgroup dl{
+    margin: 0;
+    padding: 0;
+}
+
+div.configsubgroup dl dd,
+div.configsubgroup dl dt{
+    display: inline-block;
+    width: 40%;
+    line-height: 1.8em;
+    padding: 0.15em;
+    margin: 0;
+}
+
+div.configsubgroup dl dt{
+    text-align: right;
+    padding-right: 1em;
+    width: 48%;
+}
+
+div.configsubgroup dl dd{
+    font-family: monospace;
+    vertical-align: top;
+}
+
+
+div.configsubgroup dl dd ul{
+    margin-left: 0;
+    padding-left: 1em;
+}
+
+dt.compoption{
+    font-style: italic;
+    font-weight: bold;
+}
+
+dd textarea{
+    height: 8em;
+    vertical-align: top;
+width: 100%;
+}
+</style>
+
+
+
+<h2>Config / Status (<%=h $s.filename%>)</h2>
+<p>A short report and edit page on the status of configurable objects</p>
+
+<div class="containerbox">
+    <h3>Web & Server Config</h3>
+    <p class="note">These settings affect the web interface you're currently using.  They do not affect how files are compiled, but they do affect how the result is shown to you.</p>
+
+    <div class="configsubgroup">
+	<h4>Network</h4>
+	<dl>
+	    <dt>Bind to Address:</dt>		    <dd><%=h ($s[:hostname] or "nil (any interface)")%></dd>
+	    <dt>Listen on Port:</dt>		    <dd>8080</dd>
+	</dl>
+    </div>
+
+    <div class="configsubgroup">
+	<h4>User Interface</h4>
+	<dl>
+	    <dt>"Confirm Deletion" string:</dt>	    <dd><%=h $s[:delete_confirm]%></dd>
+	    <dt>Application Title:</dt>		    <dd><%=h $s[:app_title]%></dd>
+	    <dt>Base Search Directory:</dt>	    <dd><%=h $s[:base_search_dir]%></dd>
+	    <dt>Use "ink" syntax Highlighting?</dt> <dd><%=h ($s[:use_ink_syntax_highlighting] ? "Yes" : "no")%></dd>
+	    <dt>Default "edit" contents:</dt>	    <dd width="100%"><textarea readonly><%=h $s[:default_edit_contents]%></textarea></dd>
+	</dl>
+    </div>
+
+    <div class="configsubgroup">
+	<h4>URL Routing</h4>
+	<p class="note">These paths are used by the routing system to address different kinds of content, and refer to URL paths seen in the browser, not filepaths on disk.</p>
+	<dl>
+	    <dt>Default Page</dt>							    <dd><%=h $s[:default_page]%></dd>
+	    <dt>Default Compiler (see list below)</dt>					    <dd><%=h $s[:default_compiler]%></dd>
+	    <dt>URL_STATIC root (path to resource_path):</dt>				    <dd><%=h $s[:url_static_root]%></dd>
+	    <dt>URL_RESOURCES root (path to htresources):</dt>				    <dd><%=h $s[:url_resources]%></dd>
+	    <dt>URL_DYNAMIC (start of dynamic content, i.e. 'wiki' in wikipedia):</dt>	    <dd><%=h $s[:url_dynamic]%></dd>
+	</dl>
+    </div>
+    
+    
+    <div class="configsubgroup">
+	<h4>View Composition</h4>
+	<p class="note">These settings are quite internal and should need little editing.  They refer to the location of resources on disk, rather than through the URL scheme above.</p>
+	<dl>
+	    <dt>Template Directory:</dt>					    <dd><%=h $s[:template_dir]%></dd>
+	    <dt>Default Template:</dt>						    <dd><%=h $s[:default_template]%>' (<%=h File.join($s[:template_dir], $s[:default_template])%>)</dd>
+	    <dt>Subtemplate Listing (?mode=subtemplate):</dt>			    <dd><ul>
+	    <% $s[:sub_templates].each{|k,v| %>
+		<li><%=h k%> &rarr; <%=h v%></li>
+	    <%}%></ul></dd>
+	    <!--'<%=h $s[:sub_templates]%>'</dd>-->
+	    <dt>'HT' Resources (static HTTP resources, URL_RESOURCES)</dt>	    <dd><%=h $s[:ht_resource_path]%></dd>
+	    <dt>Resources (view generation templates, URL_STATIC)</dt>		    <dd><%=h $s[:resource_path]%></dd>
+	    <dt>HTTP Error Message (<a href="?action=crash">test</a>):</dt>					    <dd width="100%"><textarea readonly><%=h $s[:error_msg]%></textarea></dd>
+	</dl>
+    </div>
+
+
+    <div class="configsubgroup">
+	<h4>HTML to LaTeX Conversion</h4>
+	<dl>
+	    <dt>HTML to LaTeX Command</dt><dd><%=h $s[:cmd_html2latex]%></dd>
+	    <dt>HTML Download Command</dt><dd><%=h $s[:cmd_wget_html2latex]%></dd>
+	</dl>
+    </div>
+</div>
+
+<div class="containerbox">
+    <h3>WiXi Engine Config</h3>
+    <p class="note">WiXi is a separate library that manages the tree of files.  It is configured in a way that does not impact the web front-end --- most of these settings are portable to other WiXi setups.</p>
+
+    <div class="configsubgroup">
+	<h4>LaTeX Format</h4>
+	<dl>
+	    <dt>End Preamble Marker</dt>		<dd><%=h $s[:end_preamble]%></dd>
+	    <dt>Template Content Placeholder</dt>	<dd><%=h $s[:template_content_placeholder]%></dd>
+	</dl>
+    </div>
+
+    <div class="configsubgroup">
+	<h4>Compilers</h4>
+	<p class="note">Note that individual compiler settings (such as build directories) can be configured below<p>
+	<dl>
+	    <dt>Compiler Directory</dt>			<dd><%=h $s[:compiler_dir]%></dd>
+	    <dt>Compilers</dt><dd>
+		<ul>
+		    <% $s[:compilers].each{|name, info|%>
+		    <li><strong><%=h name%></strong> &rarr; [<%=h info[:class]%>, <%=h info[:file]%>]</li> 	
+		    <% } %>
+		</ul>
+	    </dd>
+	</dl>
+    </div>
+
+    <div class="configsubgroup">
+	<h4>Macros</h4>
+	<dl>
+	    <dt>Macro Start Marker</dt>			<dd><%=h $s[:macro_start]%></dd>
+	    <dt>Macro End Marker</dt>			<dd><%=h $s[:macro_end]%></dd>
+	    <dt>Macro Directory</dt>			<dd><%=h $s[:macro_dir]%></dd>
+	    <dt>Macros</dt><dd>
+		<ul>
+		    <%h $s[:macros].each{|clsname, file|%>
+			<li><strong><%=h clsname%></strong> &rarr; <%=h file%></li>
+		    <%}%>
+		</ul>
+	    </dd>
+	</dl>
+    </div>
+
+    <div class="configsubgroup">
+	<h4>Storage</h4>
+	<dl>
+	    <dt>File Extension</dt>			<dd><%=h $s[:ext]%></dd>
+	    <dt>Build Directory Prefix</dt>		<dd><%=h $s[:build_dir_prefix]%></dd>
+	    <dt>Sanitise UTF8 using ICONV?</dt>		<dd><%=h ($s[:sanitise_utf8] ? "Yes" : "No")%></dd>
+	</dl>
+    </div>
+</div>
+
+
+
+<div class="containerbox">
+    <h3>Compiler Config</h3>
+    <p class="note">Compilers are plugins for WiXi, but are heavily system reliant so are configured separately.  Bold, italic items are options passed to the compiler.</p>
+
+    <% $s[:compilers].each{|name, info|%>
+
+	<div class="configsubgroup">
+	    <h4><%=h name%></h4>
+	    <dl>
+	    <% info.each{|key, val|
+	    if key != :options %>
+		<dt><%=h key%></dt><dd><%=h val%></dd>
+	    <% else 
+		val.each{|opt, optval| %>
+		    <dt class="compoption"><%=h opt%></dt><dd><%=h optval%></dd>
+	    <%	}
+	      end
+	    }%>
+	    </dl>
+	</div>
+
+    <%}%>
+
+
+</div>
+
+

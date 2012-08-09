@@ -1,0 +1,64 @@
+<style type="text/css">
+span.label{
+}
+
+span.field{
+}
+
+div.formelement{
+    padding: 0.25em;
+}
+
+div.formelement input#buttonofdoom{
+    margin-top: 0.6em;
+    padding: 0.25em;
+}
+
+p.warning{
+    text-align: center;
+    color: red;
+   font-style: italic;
+}
+</style>
+
+
+<script type="text/javascript" language="javascript">
+function setFilename(obj, ref){
+    target = document.getElementById(ref);
+    target.value = obj.value.match(/[^\/\\]+$/);
+}
+</script>
+
+<h3>Upload Resources</h3>
+<form enctype="multipart/form-data" action="" method="POST">
+    <input type="hidden" name="action" value="uploadresource" />
+    <input type="hidden" name="mode" value="upload" />
+
+
+    <div class="formelement"> 
+	<span class="label"><label for="resourceuploadfilefield">Choose a file to upload:</label></span> 
+	<span class="label"><input name="upresource" id="resourceuploadfilefield" onchange="setFilename(this, 'resourceuploadfilenamefield');" type="file" /></span>
+    </div>
+
+    <div class="formelement"> 
+	<span class="label"><label for="resourceuploadfilenamefield">...with filename:</label></span>
+	<span class="label"><input id="resourceuploadfilenamefield" type="text" name="filename" value="" /></span>
+    </div>
+
+    <div class="formelement"> 
+	<span class="label"><input id="clobberfield" type="checkbox" name="clobber" value="yes" /></span>
+	<span class="label"><label for="clobberfield">Clobber existing files</label></span>
+    </div>
+
+
+
+
+
+    <div class="formelement"> 
+	<input type="submit" value="Upload File" />
+    </div>
+</form>
+
+
+
+

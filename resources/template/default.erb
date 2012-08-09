@@ -1,0 +1,182 @@
+<%
+require 'cgi'
+require 'pathname'
+
+#page.content.read#(request.query["revision"] || nil)
+#puts page.content.content
+
+
+mode = "edit" if not page.content.exists
+mode = "display" if not mode
+
+# Select a compiler based on the immediate request, then based on the
+#  cookie, then pick the default if all else fails.
+if request.query["action"] == "setcompiler"
+    compiler = request.query["compiler"]
+else
+    compiler = cookiehash["compiler"] 
+end
+compiler = $s[:default_compiler] if not @wixi.compiler?(compiler)
+
+
+# http://www.ruby-forum.com/topic/126876
+# Many thanks, as ever.
+def to_human(var)
+    # log crashes for 0, ruby has no inf
+    return "0" if var <= 0
+    units = %w{B KiB MiB GiB TiB}
+    e = (Math.log(var)/Math.log(1024)).floor
+    s = "%.1f" % (var.to_f / 1024**e)
+    s.sub(/\.?0*$/, units[e])
+end
+
+def h(str)
+    CGI.escapeHTML(str.to_s)
+end
+
+%>
+
+<html>
+    <head>
+	<title><%=$s[:app_title]%> - <%=h page.title.to_s %></title>
+	<link type="text/css" rel="stylesheet" media="screen" href="<%= File.join("", $s[:url_resources], "basestyle.css")%>" />
+        <link rel="icon" type="image/png" href="<%=File.join("", $s[:url_resources], "favicon.png")%>">
+
+	<!-- TODO: move this into an ERB template -->
+	<style type="text/css">
+	    div#header{ background: url('<%=File.join("", $s[:url_resources], "stripe.gif")%>') transparent; }
+	    input#launcher_gobox { background: url('<%=File.join("", $s[:url_resources], "gobg.png")%>') no-repeat scroll 0 50% white; }
+	    input#search_gobox { background: url('<%=File.join("", $s[:url_resources], "search.png")%>') no-repeat scroll 0 50% white; }
+	</style>
+    </head>
+    <body><div id="headercontainer"><div id="header">
+	    <h1><span id="logo"><a href="<%=File.join("", $s[:url_dynamic], $s[:default_page])%>"><%=$s[:app_title]%></a></span> - <span class="special<%=page.special?%>"><%= "*" if page.special?%><%=h page.title.to_s %></span></h1>
+	    <ul id="actions">
+		<% if page.content.template %>
+		    <li class="view activefalse"><a href="<%=File.join("", $s[:url_dynamic], page.content.template.relpath.to_s)%>">Template</a></li>
+		<% end 
+		   if page.content.bibtex %>
+		    <li class="view activefalse"><a href="<%=File.join("", $s[:url_dynamic], page.content.bibtex.relpath.to_s)%>">BibTeX</a></li>
+		<% end 
+		if page.content.exists %>
+		    <li class="active<%= mode=="search"%>"><a href="?mode=search">Grep</a></li>
+		    <li class="active<%= mode=="upload"%>"><a href="?mode=upload">Upload</a></li>
+		<% end %>	
+		<li class="active<%= mode=="delete"%>"><a href="?mode=delete">Delete</a></li>
+		<li class="active<%= mode=="edit"%>"><a href="?mode=edit">Edit</a></li>
+		<%
+		if not page.special?
+		wixi.compilers.each{ |k| %>
+		    <li class="compiler active<%= compiler==k and mode=="display" %>"><a href="?mode=display&action=setcompiler&compiler=<%=k%>"><%=k%></a></li>
+		<% } 
+		elsif page.content.exists %>
+		    <!-- should use plaintext compiler, but it is passthrough anyway -->
+		    <li class="compiler active<%= mode=="display" %>"><a href="?mode=display">Display</a></li>
+		<% end %>
+	    </ul>
+
+	</div></div>
+<!--	<div id="pwd">
+	    <h2><span class="root"><%= wixi.root.to_s %>/</span><%= path.to_s %></h2>
+	</div> -->
+	<div id="pwd">
+	    <h2><span class="root"><%= wixi.root.to_s %></span><% dirs.each_index{|i|%><a href="<%= File.join(["", $s[:url_dynamic], File.join(dirs[0..i])])%>"><%=h dirs[i]%></a>/<%}%></h2>
+	</div>
+	<div id="side">
+	    
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <input onkeypress="{if (event.keyCode==13)window.location='<%= File.join( "", $s[:url_dynamic], "") %>' + document.getElementById('launcher_gobox').value;}" type="text" id="launcher_gobox" name="go" value="<%= page.relpath %>"/>
+	    <input onfocus="this.value='';" onkeypress="{if (event.keyCode==13)window.location='?mode=search&action=search&rootpath=<%=CGI::escape($s[:base_search_dir])%>&recurse=yes&basename=yes&searchterm=' + escape(document.getElementById('search_gobox').value);}" type="text" id="search_gobox" name="search" value="Title Grep"/>
+
+
+
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <% if page.revisions.length > 0 %>
+		<h3>Revisions</h3>
+		<ul class="menu">
+		<li class="currentrev"><a href="<%= File.join(["", $s[:url_dynamic], page.relpath])%>?mode=display"><strong>Current</strong></a>
+		<% page.revisions.sort.each{|rid| %>
+		    <li><a href="<%= File.join(["", $s[:url_dynamic], page.relpath])%>?mode=display&revision=<%=rid%>"><%=h rid%> &mdash; <%= File.mtime((wixi.storage.content_fullpath(page, rid))).strftime("%d/%m/%y, %H:%M:%S") %></a>
+		<%}%>
+		</ul>
+	    <% end %>
+
+
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <h3>Sub-pages</h3>
+	    <ul class="menu">
+	    <% if dirs.length > 1 %>
+		<li class="back"><a href="<%= File.join(["", $s[:url_dynamic]] + dirs[0..-2])%>"><%= dirs[-2] %></a></li>
+	    <% end 
+	    
+	    page.children.each{ |child| %>
+		<li><a href="<%=File.join("", $s[:url_dynamic], page.relpath, child.to_s)%>/"><%=h child.to_s %></a></li>   
+	    <% } %>
+	    </ul>
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <h3>Resources</h3>
+	    <ul class="menu">
+	    <% page.resources.each{ |file| %>
+		<% if not file.to_s =~ /#{page.basename}.#{$s[:ext]}.[0-9]+/ then %> 
+		<li><a target="_blank" href="<%= File.join("", $s[:url_static_root], page.relpath.to_s, file.to_s )%>"><%=h file.to_s %><a></li>   
+		<% end %>
+	    <% } %>
+	    </ul>
+
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <!--<h3>Revisions</h3>
+	    <ul class="menu">
+	    <% page.resources.each{ |file| %>
+		<% if file.to_s =~ /#{page.basename}.#{$s[:ext]}.[0-9]+/ then 
+		    rid = /#{page.basename}.#{$s[:ext]}.([0-9]+)/.match(file)[1] %>
+		    <li><a href="<%= File.join(["", $s[:url_dynamic], page.relpath])%>?mode=display&revision=<%=rid%>">Revision <%=h rid%></a></li> 
+		<% end %>
+	    <% } %>
+	    </ul>-->
+
+
+
+	    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	    <h3>Root</h3>
+	    <ul class="menu">
+	    <% wixi.children(".").each{ |child| %>
+		<li><a href="<%=File.join("", $s[:url_dynamic], child.to_s)%>/"><%=h child.to_s %></a></li>   
+	    <% } %>
+	    </ul>
+
+
+	</div>
+    
+
+
+	<div id="content"><%
+	    if action
+		%><div id="action" onclick="this.style.display='none';"><%=h action.to_s%></div><%
+	    end
+	    if revision
+		%><div id="revision" onclick="this.style.display='none';">This page was loaded from revision <%=h revision.to_s%>.  
+		<% if mode == "edit" %>
+		    Saving the contents of this file may result in data loss.
+		<% end %></div><%
+	    end
+
+	    # choose the template to render 
+	    template = $s[:sub_templates]["display"]
+	    template = $s[:sub_templates][mode] if $s[:sub_templates][mode]
+	    template = File.join($s[:template_dir], "sections", template)
+
+	    # Render the bugger	    
+	    formatter = ERB.new(File.open( template, 'r' ).read(), nil, nil, 'subcontext')
+	    %><%=formatter.result(binding).to_s
+	%></div>
+
+	
+	<div id="footer">
+	    Page <%= ((page.content.exists) ? "" : "<em>not</em>") %> saved 
+	    <% if File.exist?(page.content.filepath) %> | File: <strong><%= page.content.filepath %></strong> 
+	    | Size: <strong><%= to_human(File.size(page.content.filepath)) %></strong> 
+	    | Edited <strong><%= File.mtime(page.content.filepath).strftime("%d/%m/%y, %H:%M:%S") %></strong>
+	    <% end %>
+	</div>
+    </body>
+</html>

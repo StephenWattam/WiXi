@@ -1,0 +1,330 @@
+--- 
+# ------------------[Network Settings]--------------------
+# WiXi will listen on the port below, on the interface given
+#
+# Leaving the bind_address field blank will make it listen on
+# all adaptors.  Providing an ip address will make it listen
+# on just one.  This is passed straight to WEBRick, see their
+# documentation on the limitations if you want any complex 
+# behaviour.
+#
+:bind_address: 
+:port: 10000 
+
+
+
+
+# ------------------[URL Routing]--------------------
+# These settings affect the site's choice of link structure.
+#
+# Depending on the content, the browser will use these as
+# the first level of link path, i.e. http://wixi.com/static/things...
+#
+# url_tatic_root is used for any content that is a resource on
+# the current page, but is not dynamic.  This includes
+# images and anything you upload.
+#
+# url_resources is used for things such as CSS and favicons.
+# these resources never move, and can be found in the 
+# "htresources" folder on the local disk (the setting for that
+# is below).
+#
+# url_dynamic is the prefix for all dynamic content.  In
+# wikipedia this would be "wiki", because all wikipedia
+# pages start with wikipedia.org/wiki/Page Title
+#
+:url_static_root: static
+:url_resources: resources
+:url_dynamic: ""
+
+
+
+# ------------------[User Interface]--------------------
+# The default page to show to users if no link is entered.
+# 
+:default_page: Home
+
+# Default compiler to use
+# This must be the name of one of the compilers from the list below.
+#
+:default_compiler: LaTeX2HTML
+
+# The user must type the delete_confirm value to confirm
+# that they do indeed wish to delete a page
+#
+:delete_confirm: ConfirmDelete
+
+# Installing pygmentize and the ink gem allows for some
+# rudimentary syntax highlighting when displaying template
+# code.  To use the ink gem, set to true, else set to false.
+#
+:use_ink_syntax_highlighting: false
+
+# The title shown on the web front end.
+# Defaults to Wi&chi;i
+#
+:app_title: DEV - Wi&chi;i
+
+# The error message shown when HTTP errors occur.  This is
+# a string that gets combined with two others for display,
+# so ensure you have two %s items in there.
+#
+# If at all unsure, DO NOT touch this.
+#
+:error_msg: |-
+  Error: %s:
+  
+  %s
+
+# When using the search functionality, it's possible to
+# restrict the search to one directory only.
+# 
+# Set the name of a directory to restrict all searching,
+# default searches everything.
+#
+:base_search_dir: ""
+
+# The contents of the edit box when editing a page that 
+# doesn't yet exist.  This should be a very basic skeleton 
+# of content to guide the author.
+#
+# This setting is very dependent on how you design your 
+# templating system, so is usually worth editing.
+#
+:default_edit_contents: |
+  %template: Templates/Article
+  %----
+  
+  \author{Stephen Wattam}
+  \title{}
+  \maketitle
+  
+  
+  %macro{{{References}}}
+
+
+
+
+# ------------------[Templating and Storage]--------------------
+# These settings relate to how a page is built from the content.
+# 
+# If you wish to hack wixi to change the styles and display of
+# the web front end, then this is the place to start.
+#
+# If you're a casual user, you should never have to touch this lot.
+#
+
+# Where static resources such as css and images are stored on disk
+#
+:ht_resource_path: htresources
+
+# Where to find templates.  
+# This must contain the default template.
+#
+:template_dir: ./resources/template/
+
+# The filename of the default template.
+# This template must be located in template_dir.
+#
+:default_template: default.erb
+
+# Subtemplate filenames.
+# These correspond to the ?mode= parameter of the website, 
+# and must be located in template_dir/sections/.
+#
+# For the site to function, this list MUST include
+# edit, display, delete, upload and search.
+#
+# Additional ones may be added if you update the UI.
+#
+:sub_templates: 
+  edit: edit.erb
+  display: display.erb
+  compile: compile.erb
+  delete: delete.erb
+  upload: upload.erb
+  config: config.erb
+  search: search.erb
+
+
+
+
+
+# ------------------[HTML to LaTeX Conversion]--------------------
+# These settings govern the automated scraping system.
+#
+# By providing a URL in the edit page, it's possible
+# for the site to download some HTML code, convert it
+# to LaTeX, then enter it into the page.
+#
+# This is somewhat experimental, and relies on two commands.
+# The first must download a string and output the html 
+# to a given filename.
+# The second must convert the html to LaTeX, and output to STDOUT.
+#
+:cmd_html2latex: gnuhtml2latex -s %s
+:cmd_wget_html2latex: wget -q -k -O %s %s
+
+
+##################################################################
+##################################################################
+#			 WiXi Engine Config
+# 
+# The options below all affect the internals of how pages are 
+# rendered.  This means that:
+#
+# a) If you edit some of these options after creating content,
+#    then said content will stop working
+#
+# b) If you take this config, it should work on non-web-based WiXi
+#    tools.  As of writing none exist, but I plan to make some.
+#
+##################################################################
+##################################################################
+
+
+
+
+
+
+# ------------------[Content Settings]--------------------
+# Each file in the WiXi is made up of an optional preamble
+# followed by raw LaTeX code.
+#
+# The preamble is a series of fields, in modified YML.  This
+# setting defines where the document will be split.
+#
+:end_preamble: "%----"
+
+# The content will be injected into the template where the 
+# following string is found.  This should be complex enough
+# that it won't appear in any templates "by accident".
+#
+:template_content_placeholder: "%content%"
+
+# It's possible (and highly recommended) to install ICONV
+# and the iconv gem in order to clean up broken UTF-8 input.
+#
+# Set to true to clean inputs to ensure they are valid UTF8.
+#
+:sanitise_utf8: true
+
+# The file extension to store content under.  This should not
+# be changed once content has been created, because the wiki will
+# look in the wrong place!
+#
+:ext: wtex
+
+
+
+
+
+# ------------------[Macro Configuration]--------------------
+# Macros operate on text by calling little portable classes.
+# These macros are relatively easy to write, and can easily
+# extend the document to include some fancy things.
+#
+# Macros are listed by class name (used to call the macro),
+# and have a filename in which the class may be found.
+#
+# All macros must live in the same folder, macro_dir.
+#
+:macro_dir: macros
+:macros: 
+  CurrentDate: current_date.rb
+  EvalRuby: eval_ruby.rb
+  EditDate: edit_date.rb
+  PageMetadata: page_metadata.rb
+  References: references.rb
+  ListMacros: list_macros.rb
+  WixiSettings: wixi_settings.rb
+  Fortune: fortune.rb
+
+# These tokens are used to signal the start and end of a 
+# macro call.
+#
+:macro_start: "%macro{{{"
+:macro_end: "}}}"
+  
+
+
+
+
+# ------------------[Compiler Configuration]--------------------
+# Compilers are the core of the WiXi system.
+#
+# All compilers extend a class which takes the pages (and bibtex)
+# and outputs another form.  All compilers in the web system should
+# output HTML.
+#
+# The build_dir_prefix sets where files can be prepared for use
+# by compilers.  This is attached to the system's temporary 
+# directory when used thus:
+# TEMP/build_dir_prefix/Path/To/Page
+#
+# The compiler_dir tells the wixi system where to find
+# the compilers themselves.
+#
+# Each entry in the compilers hash should have:
+#  :file  --- the filename to locate (relative to the compiler_dir)
+#  :class --- The name of the compiler class
+#  :options --- any options the compiler may need to run
+#
+# Many of these compilers have large option lists, and you may
+# have to edit some of them depending on system configuration.
+#
+# Comment out or write in any compilers you wish to hide or display
+#
+:build_dir_prefix: wixicompile
+:compiler_dir: compilers
+:compilers: 
+  Download: 
+    :class: PDFDownloadCompiler
+    :file: pdf_download_compiler.rb
+    :options: 
+      :pdflatex_cmd: pdflatex -interaction=batchmode -output-directory="%s" "%s"
+      :bibtex_cmd: bibtex "%s"
+      :triple_compile: true
+      :render_container: <h3>Download</h3><p>Download <a target="_blank" href="%s">%s</a></p>
+  Embed: 
+    :class: PDFEmbedCompiler
+    :file: pdf_embed_compiler.rb
+    :options: 
+      :pdflatex_cmd: pdflatex -interaction=batchmode -output-directory="%s" "%s"
+      :bibtex_cmd: bibtex "%s"
+      :triple_compile: true
+      :render_container: "\n\n\
+        <script type=\"text/javascript\"> \n\
+        function resizeFrame(){ \n    newheight=Math.max(window.innerHeight - 150, 100);\n    document.getElementById('pdfarea').style.height = newheight + \"px\"; \n\
+        }\n\n\
+        window.onresize=resizeFrame;\n\
+        window.onload=resizeFrame;\n\
+        </script> \n\n\
+        <iframe onclick=\"resizeFrame\" id=\"pdfarea\" class=\"pdfembed\" src=\"%s\"></iframe>"
+  #Plain: 
+    #:class: PlainTextCompiler
+    #:file: plain_text_compiler.rb
+    #:options: 
+      #:render_container: "<div style=\"font-family: monospace; white-space: pre-wrap;\">%s</div>"
+  #Hevea: 
+    #:class: HeveaCompiler
+    #:file: hevea_compiler.rb
+    #:options: 
+      #:cmd_hevea: hevea -s
+  LaTeX2HTML: 
+    :class: LaTeX2HTMLCompiler
+    :file: latex_html_compiler.rb
+    :options: 
+      :copy_images: true
+      :cmd_latex2html: latex2html -split 0 -noaddress -noinfo -nonavigation -nosubdir "%s"
+  #DeTeX: 
+    #:class: DeTeXCompiler
+    #:file: detex_compiler.rb
+    #:options: 
+      #:cmd_detex: detex "%s"
+      #:render_container: "<div style=\"font-family: monospace; white-space: pre-wrap;\">%s</div>"
+  TtH: 
+    :class: TTHCompiler
+    :file: tth_compiler.rb
+    :options: 
+      :tth_cmd: tth -u -a -r  < "%s"

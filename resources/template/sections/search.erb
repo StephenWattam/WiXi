@@ -1,0 +1,78 @@
+<style type="text/css">
+span.label{
+}
+
+span.field{
+}
+
+div.formelement{
+    padding: 0.25em;
+}
+
+p.warning{
+    text-align: center;
+    color: red;
+   font-style: italic;
+}
+</style>
+
+
+<h3>Search Titles</h3>
+<form action="" method="GET">
+    <input type="hidden" name="mode" value="search"/>
+    <input type="hidden" name="action" value="search"/>
+    
+    
+    <div class="formelement"> 
+	<span class="label"><label for="searchtermfield">Find</label></span>
+	<span class="field"><input type="text" name="searchterm" id="searchtermfield" value="<%= request.query['searchterm'].to_s %>"/></span>
+        <span class="label" style="font-family: monospace;">/.*supports regex.*/i</span>
+    </div>
+    
+    
+    <div class="formelement"> 
+	<span class="label"><label for="rootpathfield">From path</label></span>
+	<span class="field"><input type="text" name="rootpath" id="rootpathfield" value="<%= request.query['rootpath'] != nil ? request.query['rootpath'] : page.relpath %>"/></span>
+    </div>
+    
+    
+    <div class="formelement"> 
+	<span class="field"><input type="checkbox" name="recurse" id="recursefield" value="yes" <%= request.query['recurse'].to_s == 'yes' ? "checked" : ""%>"/></span>
+	<span class="label"><label for="recursefield">Search recursively</label></span>
+    </div>
+    
+    
+    <div class="formelement"> 
+	<span class="field"><input type="checkbox" name="basename" id="basenamefield" value="yes" <%= request.query['basename'].to_s  == 'yes' ? "checked" : ""%>"/></span>
+	<span class="label"><label for="basenamefield">Grep in basename only</label></span>
+    </div>
+    
+    
+    <div class="formelement"> 
+	<input type="reset"/>
+	<input type="submit" value="Search!"/>
+    </div>
+</form>
+<% if mode == "search" and actiondata %>
+<hr/>
+
+<h3>Search Results</h3>
+<!--Grep style - - - file and collocation, line by line.-->
+<% if actiondata[:pages].length > 0 or actiondata[:resources].length > 0%>
+<h4>Pages</h4>
+<ul>
+    <% actiondata[:pages].sort.each{ |result| %>
+	<li><a href="<%= File.join("", $s[:url_dynamic], result.to_s)%>"><%=result.to_s %></a></li>
+    <%}%>
+</ul>
+
+<h4>Resources</h4>
+<ul>
+    <% actiondata[:resources].sort.each{ |result| %>
+	<li><a href="<%= File.join("", $s[:url_static_root], result.to_s)%>"><%=result.to_s %></a></li>
+    <%}%>
+</ul>
+<% else %>
+<p><strong>Noooooooo!</strong> search results were returned for your query.</p>
+<% end %>
+<% end %>

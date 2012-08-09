@@ -1,0 +1,117 @@
+<% if page.resources.length > 0 %>
+
+<h3>Delete Resources</h3>
+<style type="text/css">
+table#deletableresources{
+    padding: 0.25em;
+    border: solid 1px #333;
+}
+
+table#deletableresources td{
+    padding: 0.2em 0.5em;
+}
+
+
+
+table#deletableresources th{
+    border-bottom: solid 1px #333;
+}
+</style>
+
+<table id="deletableresources">
+    <thead><th>Filename</th><th>Size</th><th>Actions</th></thead>
+    <tfoot></tfoot>
+    <tbody>
+	<% page.resources.sort.each{ |file| %>
+	    <tr>
+		<td><%= file.to_s %></td>
+		<td><%= to_human(File.size(page.path + file.to_s)) %></td> 
+		<td><a target="_blank" href="<%= File.join( "", $s[:url_static_root], page.relpath.to_s, file.to_s )%>">Open</a> <a href="?action=deleteresource&mode=delete&resource=<%= CGI::escape(file.to_s) %>">Delete</a></td>
+	    </tr>
+	<% } %>
+    </tbody>
+</table>
+
+<br/>
+<hr/>
+<br/>
+<% end %>
+
+
+
+
+
+<% if page.revisions.length > 0 %>
+<h3>Delete ALL Previous Revisions</h3>
+This will delete all versions of the file that are not current.  It is akin to manually removing all previous revisions using the resource deleting thing above.
+<br/>
+<form action="" method="GET">
+    <input type="hidden" name="action" value="deletepastrevisions"/>
+    <input type="hidden" name="mode" value="display"/>
+    <input type="hidden" name="pagepath" value="<%=CGI::escape(page.relpath.to_s)%>"/>
+    
+    <div class="formelement">
+	<span class="label"><label for="confirmfield">Type <em><%= $s[:delete_confirm] %></em>: </label></span>
+	<span class="field"><input type="text" name="confirm" id="confirmfield"/></span>
+    </div>
+  
+    <div class="formelement">
+	<input type="submit" id="buttonofdoom" value="Delete <%=h page.revisions.length%> Revisions">
+    </div>
+</form>
+
+<hr/>
+<br/>
+<% end %>
+
+
+
+
+<style type="text/css">
+span.label{
+}
+
+span.field{
+}
+
+div.formelement{
+    padding: 0.25em;
+}
+
+div.formelement input#buttonofdoom{
+    margin-top: 0.6em;
+    padding: 0.25em;
+}
+
+p.warning{
+    text-align: center;
+    color: red;
+   font-style: italic;
+}
+</style>
+
+<h3>Delete Page</h3>
+<p class="warning">There is <strong>no way</strong> of recovering deleted pages!</p>
+
+<div id="deleteform">
+<form action="" method="GET">
+    <input type="hidden" name="action" value="delete"/>
+    <input type="hidden" name="mode" value="display"/>
+    <input type="hidden" name="pagepath" value="<%=CGI::escape(page.relpath.to_s)%>"/>
+    
+    <div class="formelement">
+	<span class="label"><label for="confirmfield">Type <em><%= $s[:delete_confirm] %></em>: </label></span>
+	<span class="field"><input type="text" name="confirm" id="confirmfield"/></span>
+    </div>
+  
+    <div class="formelement"> 
+	<span class="field"><input type="checkbox" name="children" id="childrenfield" value="yes"/></span>
+	<span class="label"><label for="childrenfield">Also delete child pages</label></span>
+    </div>
+
+    <div class="formelement">
+	<input type="submit" id="buttonofdoom" value="Delete <%=h File.join("", page.relpath) %>">
+    </div>
+</form>
+</div>
+	 
